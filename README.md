@@ -1,1 +1,23 @@
 # Analyst-Portfolio
+
+## Analyst Resume
+
+This is my up-to-date (8 May 2024) Data Analyst resume. In my resume, I include my educational background, professional work experience, and data analysis focused coursework and projects. I highlight my experiences programming in R and STATA across my undergraduate and graduate studies, including SIS-750-007 Data Analysis. My cumulative data analytics experience, professional experience, and supplementary language and technical skills make me a compelling candidate for a junior analyst position.
+
+
+## Exemplary Code Chunk
+
+This R code was used for my presentation project, "A Global Assessment of Annual Investment in Telecommunications." In this project, I cleaned, munged, and subset data from the ITU and World Bank on global telecommunications investment. During the project, I wanted to find a good case study for the poster to illustrate the effect (or, non-effect) of a country's "Domestic fixed long distance" sub-industry switching from monopoly to Partial Competition and/or Full Competition. It would be tedious to have to make graphs for the six countries I hoped to check. Therefore, I tried employing a function that would automatically create a graph of each country given the certain criteria I hoped to narrow down (filtering for certain years, series == Domestic fixed long distance). To make this code self-contained and usable by anyone, I adapted it for base R's "WorldPhones" dataset - which is installed in RStudio by default. I believe that this highlights my skill with R, as it demonstrates that I can employ functions efficiently to make sense of a complex dataset.
+
+The function creates a graph using the preferred Region (substitute for Country in my original dataset). The x axis shows the Year, whereas the y axis shows the Number of Phones (we can imagine this is USD in Billions in telecommunications investment). The function applies a red shade for the years where there was a monopoly and a green shade over the years where there was full competition. This makes it easy to assess which countries had fluctuation in competition & how that fluctuation correlates to USD billion investment in telecommunications.
+
+
+## Presentation
+
+My 2024-03-27 presentation, "How Green are U.S. Cities compared to the Rest of the World?." I use Jennifer D. Stowell et al.'s remarkable 2023 Global Greenspace Indicator Dataset—which measures urban greenness among 1000+ cities across the world—to assess how green U.S. cities are in comparison with the rest of the world. Through this project, I had the opportunity to expand my somewhat limited, U.S.-frame of reference and explore urban greenness across countries across the globe. The dataset used the Normalized Difference Vegetation Index (NDVI) — basically, a widely-used metric for quantifying the health and density of vegetation using satellite sensor data —  to record urban greenness across 1000+ global cities. My presentation incorporated a box plot of average annual NDVI for all urban cities, highlighting the cities at the 25% and 75% quartiles, the highest NDVI score, and the average U.S. city in comparison. It also found the peak NDVI score among several major countries and compared how cities in the U.S. stack up against the rest of the world.
+
+
+## Poster
+
+My poster, "A Global Assessment of Annual Investment in Telecommunications," assessed inequality in (domestic and foreign) annual telecommunications investment, with the goal of identifying those factors that significantly correlated with increased investment. I used data from the International Telecommunication Union, the World Bank, and the IMF to assess variables like annual investment in telecommunications, total gdp and gdp-per-capita, industry competition, and ease-of- business. I applied multivariate regression analysis to discern the extent to which these factors did or did not correlate statistically significantly with increased investment, and I used fixed country effects to account for systematic differences among countries. I had expected to find more robust findings regarding the role of industry competition upon investment, but surprisingly found that Industry competition did not seem to correlate with domestic annual telecom investment. Unfortunately, the data on foreign investment was limited and too spurious to draw any meaningful conclusions. However, the data on domestic investment revealed (perhaps unsurprisingly) that total gdp (and gdp-per-capita) correlated statistically significantly. This was an incredibly fun research project that married together my interests for antitrust law and history, international trade and investment, technology policy, and data analytics.
+
