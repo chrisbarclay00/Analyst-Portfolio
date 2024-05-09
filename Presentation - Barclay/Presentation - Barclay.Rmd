@@ -1,0 +1,303 @@
+---
+title: "How Green are U.S. Cities compared to the Rest of the World?"
+subtitle: "A Comparative Analysis of Urban Greenspace using Stowell et al.'s (2023) global urban greenness indicator dataset for 1,000+ cities (Global Greenspace Indicator Dataset)"
+author: "Christopher B."
+institute: "cb9110a@american.edu"
+date: "2024-03-27"
+output:
+  beamer_presentation:
+    theme: "Pittsburgh"
+    colortheme: "orchid"
+fontsize: 10pt
+classoption: "aspectratio=169"
+
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+## Packages
+library(tidyverse)
+library(knitr)
+library(readxl)
+library(lubridate)
+library(patchwork)
+library(readr)
+library(tidytext)
+
+## Load data
+df = read_csv("greenspace_data_share.csv")
+
+## Set themes
+NDVI_Theme = theme_minimal(base_size = 8) +
+    theme(
+      text = element_text(family = "Times"),
+      plot.title = element_text(family = "Times", hjust = 0.5),
+      plot.subtitle = element_text(family = "Times", hjust = 0.5),
+      plot.background = element_rect(fill = "white", color = NA),
+      legend.position = "none",
+      panel.grid.minor = element_blank(),
+      panel.grid.major.x = element_blank(),
+      axis.line.x = element_line(color = "black"),
+      axis.text.x = element_text(color = "black"),
+      axis.text.y = element_text(color = "black")
+    )
+
+p2_labs = tibble(
+    labels = c('Indonesia','India','USA','Brazil','Nigeria','China')
+  )
+
+```
+
+## Background
+**Normalized Difference Vegetation Index (NDVI)**
+- A widely-used, accurate metric for quantifying the health and density of vegetation using sensor data (e.g., satellites)
+
+**Dataset Contents:**
+
+- Peak and Annual 1x1 km NDVI for over 1,000 urban centers
+- Additional information regarding the climate zone
+- Level of Development (Human Development Index)
+
+
+**Uses:**
+
+- Identifying urban centers that lack greenspace
+- Developing climate-related plans to counter climate effects in urban centers
+- May be adapted to fit other health-related studies
+
+
+
+## Global Average NDVI in 2021
+
+```{r Data_Wrangling}
+df1 = df |>
+  na.omit() |>
+  group_by(City) |>
+  mutate(
+    mean_ndvi_city = mean(annual_avg_2021),
+    mean_peak_ndvi_city = mean(peak_NDVI_2021)
+    )
+df1 = df1 |>
+  group_by(Country) |>
+  mutate(
+    mean_ndvi_country = mean(annual_avg_2021),
+    mean_peak_ndvi_country = mean(peak_NDVI_2021)    
+  )
+
+df2 = df1 |>
+mutate(ann_avg_gradient = case_when(
+        mean_ndvi_city < 0.2 ~ "#Ceb010", 
+        mean_ndvi_city >= 0.2 & mean_ndvi_city < 0.3 ~ "#C4ce10", 
+        mean_ndvi_city >= 0.3 & mean_ndvi_city < 0.4 ~ "#9cce10", 
+        mean_ndvi_city >= 0.4 & mean_ndvi_city < 0.5 ~ "#74ce10", 
+        mean_ndvi_city >= 0.5 & mean_ndvi_city < 0.6 ~ "#10CE38", 
+        mean_ndvi_city >= 0.6 & mean_ndvi_city < 0.7 ~ "#10ce88", 
+        mean_ndvi_city >= 0.7 ~ "#10cea3", 
+      ),
+      peak_gradient = case_when(
+        mean_peak_ndvi_city < 0.2 ~ "#Ceb010", 
+        mean_peak_ndvi_city >= 0.2 & mean_peak_ndvi_city < 0.3 ~ "#C4ce10", 
+        mean_peak_ndvi_city >= 0.3 & mean_peak_ndvi_city < 0.4 ~ "#9cce10", 
+        mean_peak_ndvi_city >= 0.4 & mean_peak_ndvi_city < 0.5 ~ "#74ce10", 
+        mean_peak_ndvi_city >= 0.5 & mean_peak_ndvi_city < 0.6 ~ "#10CE38", 
+        mean_peak_ndvi_city >= 0.6 & mean_peak_ndvi_city < 0.7 ~ "#10ce88", 
+        mean_peak_ndvi_city >= 0.7 ~ "#10cea3"
+      ),
+      grad_peak_NDVI_2021 = case_when(
+        peak_NDVI_2021 < 0.2 ~ "#Ceb010", 
+        peak_NDVI_2021 >= 0.2 & peak_NDVI_2021 < 0.3 ~ "#C4ce10", 
+        peak_NDVI_2021 >= 0.3 & peak_NDVI_2021 < 0.4 ~ "#9cce10", 
+        peak_NDVI_2021 >= 0.4 & peak_NDVI_2021 < 0.5 ~ "#74ce10", 
+        peak_NDVI_2021 >= 0.5 & peak_NDVI_2021 < 0.6 ~ "#10CE38", 
+        peak_NDVI_2021 >= 0.6 & peak_NDVI_2021 < 0.7 ~ "#10ce88", 
+        peak_NDVI_2021 >= 0.7 ~ "#10cea3"
+      )
+  ) #Also tried gradient2 = colorRamp(c("yellow", "green4"))
+
+
+vis1_text_color = c("red", "#C4ce10", "#9cce10", "#10ce88")
+
+```
+
+```{r summary_stats, include = FALSE}
+stats = df2 |>
+  select(City, Country, mean_ndvi_city) |>
+  group_by(City) |>
+  summarize(Country = Country,
+            mean_ndvi_city = mean_ndvi_city) |>
+  arrange(desc(mean_ndvi_city))
+head(stats)
+
+vis1_quant_25 <- quantile(df2$mean_ndvi_city, 0.25)
+vis1_quant_75 <- quantile(df2$mean_ndvi_city, 0.75)
+
+city_quantile_25 <- df2$City[which.min(abs(df2$mean_ndvi_city - vis1_quant_25))]
+city_quantile_75 <- df2$City[which.min(abs(df2$mean_ndvi_city - vis1_quant_75))]
+```
+
+```{r Plot 1, fig.dim=c(5,2.5)}
+p1 = df2 |>
+    ggplot(aes(
+      x = mean_ndvi_city
+    )) +
+    geom_boxplot(
+        fill = "grey90",
+        outliers = TRUE,
+        outlier.color = "green4",
+        outlier.fill = "green4",
+        outlier.shape = 19,
+        outlier.size = 1.5,
+        outlier.stroke = 0.5,
+        outlier.alpha = 0.3,
+        notch = FALSE,
+        notchwidth = 0.75,
+        varwidth = TRUE,
+        show.legend = NA
+    ) + 
+    labs(
+      x = "Annual NDVI as mean of seasonal NDVI values",
+      title = "Global Annual NDVI (City-Level)",
+      subtitle = "How the Average U.S. City Compares with Global Mean Annual NDVI"
+    ) +
+    scale_x_continuous(
+      name = "Annual NDVI as mean of seasonal NDVI values", 
+      breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+      labels = c('0', 'Exceptionally Low', 'Very Low', 'Low', 'Moderate', 'High', 'Very High')
+    ) +
+    scale_y_continuous(
+      name = NULL,
+      breaks = NULL,
+      labels = NULL
+    ) +
+  geom_segment(
+    x = 0.3185625, #this red line shows the average U.S. city's mean NDVI
+    y = -5,
+    xend = 0.3185625,
+    yend = 5,
+    color = "red",
+    linewidth = 1
+  ) +
+  geom_text(aes(x = 0, y = 0.3185625, label = "Average U.S. City (0.319)"), color = "red", size = 2.5, hjust = -2.375, vjust = 2, family = "Times") + #annotation for red line
+  
+  geom_text(aes(x = 0, y = 0.4, label = "Kandy, Sri Lanka (0.632)"), color = "#10ce88", size = 2.5, hjust = -3.5, vjust = 24, family = "Times") +
+  geom_segment(aes(x = 0.65, xend = 0.633, y = -0.28, yend = -0.02), arrow = arrow(length = unit(0.1, "inches")), color = "#10ce88") + #arrow for Kandy, Sri Lanka
+  
+  geom_text(aes(x = 0, y = 0.4, label = "Curitiba, Brazil (0.338)"), color = "#9cce10", size = 2.5, hjust = -2.65, vjust = 24, family = "Times") +
+  geom_segment(aes(x = 0.38, xend = 0.34, y = -0.28, yend = -0.02), arrow = arrow(length = unit(0.1, "inches")), color = "#9cce10") +
+  
+  geom_text(aes(x = 0, y = 0.4, label = "Kaifeng, China (0.227)"), color = "#C4ce10", size = 2.5, hjust = -0.7, vjust = 24, family = "Times") +
+  geom_segment(aes(x = 0.2, xend = 0.225, y = -0.28, yend = -0.02), arrow = arrow(length = unit(0.1, "inches")), color = "#C4ce10") +
+  
+  NDVI_Theme
+p1
+```
+
+
+
+
+
+## Peak NDVI
+
+
+``` {r Plot 2, fig.dim=c(4.5,2.5)}
+
+p2 = df2 |>
+    group_by(Country, mean_peak_ndvi_country) |> 
+    filter(
+      Country == "United States of America" |
+      Country == "China" |
+      Country == "India" |
+      Country == "Indonesia" |
+      Country == "Nigeria" |
+      Country == "Russia" |
+      Country == "Brazil"
+    ) |> #tried to get a wide span of countries
+
+    ggplot(aes(
+      x = Country,
+      y = mean_peak_ndvi_country,
+      fill = Country
+    )) +
+    labs(
+      title = "Peak NDVI per Country",
+      x = NULL,
+      y = "Mean Peak NDVI"
+    ) +
+    geom_col(
+        aes(x = reorder(Country, mean_peak_ndvi_country)),
+        position = position_dodge(),
+        stat = "identity",
+        show.legend = FALSE
+    ) +
+    scale_fill_manual(
+      values = c("#9cce10", "#9cce10", "#9cce10", "#74ce10", "#9cce10", "#9cce10")
+      #Original: values = c("green", "red3", "orange", "red", "#008000", "blue")
+    ) +
+    coord_flip() +
+    NDVI_Theme +
+    theme(panel.grid = element_blank(),
+         panel.grid.major = element_blank(), 
+         panel.grid.minor = element_blank())
+
+
+df3 = df2 |>
+    group_by(Country, peak_NDVI_2021) |> 
+    filter(
+      Country == "United States of America"
+    )
+
+p3 = df2 |>
+    group_by(Country, peak_NDVI_2021) |> 
+    filter(
+      Country == "United States of America"
+    ) |> 
+    ggplot(aes(
+      x = City,
+      y = peak_NDVI_2021,
+      fill = grad_peak_NDVI_2021
+    )) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.05))) + #fixes the 'ghostly hover' issue where bar chart hovers above the x-axis
+  scale_fill_manual(values = c(
+      "#Ceb010" = "#Ceb010",
+      "#C4ce10" = "#C4ce10",
+      "#9cce10" = "#9cce10",
+      "#74ce10" = "#74ce10",
+      "#10CE38" = "#10CE38",
+      "#10ce88" = "#10ce88",
+      "#10cea3" = "#10cea3"
+    )) +
+    labs(
+      title = "Peak NDVI across U.S. Cities",
+      x = "U.S. Cities",
+      y = "Mean Peak NDVI"
+    ) +
+    geom_col(
+        aes(x = reorder(City, -peak_NDVI_2021)),
+        position = position_dodge(),
+        stat = "identity",
+        show.legend = TRUE
+    ) +
+    scale_x_discrete(
+      labels = NULL
+    ) +
+    coord_flip() +
+    NDVI_Theme +
+    theme(panel.grid = element_blank(),
+         panel.grid.major = element_blank(), 
+         panel.grid.minor = element_blank())
+
+
+p2 + p3 +
+     plot_annotation(
+       title = 'Peak NDVI in Select Countries and U.S. Cities',
+       theme = theme(plot.title = element_text(size = 10, family = "Times")))
+```
